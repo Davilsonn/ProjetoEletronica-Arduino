@@ -1,0 +1,194 @@
+/*Fios:
+Luz amarela = 10
+Luz vermelha = 11
+Buzzer = 13
+
+Bottao/LED 1 = 9 / 5
+Bottao/LED 2 = 8 / 4
+Bottao/LED 3 = 7 / 3
+Bottao/LED 4 = 6 / 2
+*/
+const int buzzerPin = 13;
+const int RedPin = 11;
+const int YellowPin = 10;
+
+const int button1 = 9, button2 = 8, button3 = 7, button4 = 6, amount = 4;
+const int LED1 = 5, LED2 = 4, LED3 = 3, LED4 = 2;
+
+const int baseLength = 1600;
+int n = baseLength;
+int pattern[amount];
+bool standby = true;
+
+
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(button1, INPUT_PULLUP);
+  pinMode(button2, INPUT_PULLUP);
+  pinMode(button3, INPUT_PULLUP);
+  pinMode(button4, INPUT_PULLUP);
+
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(LED4, OUTPUT);
+
+  pinMode(RedPin, OUTPUT);
+  pinMode(YellowPin, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if (standby == false){
+    if (digitalRead(button1) == LOW){
+      checarResposta(button1 - button1);
+    }
+
+    if (digitalRead(button2) == LOW){
+      checarResposta(button1 - button2);
+    }
+
+    if (digitalRead(button3) == LOW){
+      checarResposta(button1 - button3);
+    }
+
+    if (digitalRead(button4) == LOW){
+      checarResposta(button1 - button4);
+    }
+  } else if (standby == true){
+    if (digitalRead(button1) == LOW){
+      InicioJogo();
+    }
+
+    if (digitalRead(button2) == LOW){
+      InicioJogo();
+    }
+
+    if (digitalRead(button3) == LOW){
+      InicioJogo();
+    }
+
+    if (digitalRead(button4) == LOW){
+      InicioJogo();
+    }
+  }
+}
+
+
+
+int InicioJogo(){
+  //
+  gerarPadrao();
+  if (standby == true){
+    standby = false;
+  }
+
+  //Fazendo a apresentação antes do jogo em si
+  digitalWrite(RedPin, HIGH);
+  digitalWrite(buzzerPin, HIGH);
+  delay((n)/3);
+  digitalWrite(buzzerPin, LOW);
+  delay((2 * n)/3);
+  digitalWrite(RedPin, LOW);
+  digitalWrite(YellowPin, HIGH);
+  digitalWrite(buzzerPin, HIGH);
+  delay((n)/3);
+  digitalWrite(buzzerPin, LOW);
+  delay((2 * n)/3);
+  digitalWrite(YellowPin, LOW);
+  
+
+  for (int i = 0; i < amount; i++){
+    if (pattern[i] == 1){
+      digitalWrite(LED1 - i, HIGH);
+    }
+  }
+  digitalWrite(buzzerPin, HIGH);
+  delay((n)/3);
+
+  digitalWrite(buzzerPin, LOW);
+  delay((2 * n)/3);
+  
+  for (int i = 0; i < amount; i++){
+    if (pattern[i] == 1){
+      digitalWrite(LED1 - i, LOW);
+    }
+  }
+}
+
+
+
+void gerarPadrao(){
+  bool isEmpty = true;
+  do{
+  for (int i = 0; i < amount; i++){
+    if (random(0,2) > 0){
+      pattern[i] = 1;
+      isEmpty = false;
+    } else {
+      pattern[i] = 0;
+    }
+  }
+  }while(isEmpty == true);
+
+  
+}
+
+
+
+void checarResposta(int i){
+  if (pattern[i] == 1){
+    pattern[i] = 0;
+    digitalWrite(LED1 - i, HIGH);
+    delay(n/2);
+    digitalWrite(LED1 - i, LOW);
+  }else if (pattern[i] == 0){
+    gameLost();
+    return;
+  }
+
+  bool isDone = true;
+  for (int j = 0; j < amount; j++){
+    if (pattern[j] == 1){
+      isDone = false;
+    }
+  }
+
+  if (isDone == true){
+    gameWon();
+  }
+
+  delay(200);
+}
+
+
+
+
+void gameWon(){
+  for (int i = 0; i < amount; i++){
+    digitalWrite(LED1 - i, HIGH);
+  }
+  delay(1000);
+  for (int i = 0; i < amount; i++){
+    digitalWrite(LED1 - i, LOW);
+  }
+  delay(500);
+  n = (n * 7)/10;
+  InicioJogo();
+}
+
+
+
+
+void gameLost(){
+  digitalWrite(buzzerPin, HIGH);
+  digitalWrite(RedPin, HIGH);
+  delay(2000);
+  digitalWrite(buzzerPin, LOW);
+  digitalWrite(RedPin, LOW);
+
+  n = baseLength;
+  standby = true;
+}
